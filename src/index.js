@@ -28,22 +28,22 @@ function Test() {
   this.scene = FamousEngine.createScene('body');
 
   this.camera = new Camera(this.scene);
-  this.camera.setDepth(1000);
+  // this.camera.setDepth(1000);
 
   this.simulation = new PhysicsEngine();
 
   this.node = this.scene.addChild();
   this.node
       .setSizeMode('absolute', 'absolute', 'absolute')
-      .setAbsoluteSize(100, 200)
-      .setPosition(0, 70, 0)
+      .setAbsoluteSize(50, 200)
+      .setPosition(0, 0, 0)
       .setMountPoint(0.5, 0.5);
 
   this.line = this.node.addChild();
   this.line
-      .setAbsoluteSize(100,5)
+      .setAbsoluteSize(50,10)
       .setSizeMode(1,1,1)
-      .setAlign(0.0, 0.5);
+      .setAlign(0.0, 0.5); //need to make function to radomize this
   var mark = new DOMElement(this.line, {
     properties:{
         'background-color': '#FF0000'
@@ -51,13 +51,11 @@ function Test() {
   });
    
 
-  var position = new Position(this.node); //why this node, but not this.position?
+  var position = new Position(this.node);
   this.myBox = createBox.call(this, this.node, position);
   console.log('this.myBox', this.myBox);
+  console.log(window.innerHeight);
 
-  //test
-  var lp = new Position(this.line);
-  //test end
   FamousEngine.requestUpdateOnNextTick(this);
   console.log(this);
 }
@@ -66,7 +64,7 @@ Test.prototype.onUpdate = function(time){
   this.simulation.update(time);
 
   var itemPosition = this.myBox.getPosition();
-  console.log(this.line.getPosition());
+  // console.log(itemPosition);
   //console.log(itemPosition.x, itemPosition.y, itemPosition.z);
   this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
   FamousEngine.requestUpdateOnNextTick(this);
@@ -81,16 +79,17 @@ function createBox(node, position) {
       'background-color':'#49afeb'
     } 
   });
+
   var mb = new Box({
     mass: 10,
-    size: [100, 200, 100],
+    size: [50, 200, 10],
     position: new Vec3(window.innerWidth / 2, 0, 0)
   });
 
   this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
 
   this.floor = new Wall({direction: Wall.UP, friction: 0});
-  this.floor.setPosition(0,window.innerHeight, 0);
+  this.floor.setPosition(0, window.innerHeight, 0);
 
   this.collision = new Collision([mb, this.floor]);
   this.distance = new Distance(mb,this.floor);
