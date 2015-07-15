@@ -13,6 +13,9 @@ var Size = famous.components.Size;
 var Position = famous.components.Position;
 var MountPoint = famous.components.MountPoint;
 var Gravity1D = physics.Gravity1D;
+var Collision = physics.Collision;
+var Distance = physics.Distance;
+var Wall = physics.Wall;
 
 
 var DOMElement = famous.domRenderables.DOMElement;
@@ -21,49 +24,81 @@ var FamousEngine = famous.core.FamousEngine;
 //Physics engine test
 function Test() {
 
-    //create scene graph
-    this.scene = FamousEngine.createScene('body');
+  //create scene graph
+  this.scene = FamousEngine.createScene('body');
 
-    this.camera = new Camera(this.scene);
-    this.camera.setDepth(1000);
+  this.camera = new Camera(this.scene);
+  this.camera.setDepth(1000);
 
-    this.simulation = new PhysicsEngine();
-    var node = this.scene.addChild();
-    var size = new Size(node).setMode(1,1);
-    var position = new Position(node);
-    this.myBox = createBox.call(this, node, size, position);
+  this.simulation = new PhysicsEngine();
+
+  this.node = this.scene.addChild();
+  this.node
+      .setSizeMode('absolute', 'absolute', 'absolute')
+      .setAbsoluteSize(100, 200)
+      .setPosition(0, 70, 0)
+      .setMountPoint(0.5, 0.5);
+
+  this.line = this.node.addChild();
+  this.line
+      .setAbsoluteSize(100,5)
+      .setSizeMode(1,1,1)
+      .setAlign(0.0, 0.5);
+  var mark = new DOMElement(this.line, {
+    properties:{
+        'background-color': '#FF0000'
+    }
+  });
    
-    FamousEngine.requestUpdateOnNextTick(this);
-    console.log('test')
+
+  var position = new Position(this.node); //why this node, but not this.position?
+  this.myBox = createBox.call(this, this.node, position);
+  console.log('this.myBox', this.myBox);
+
+  //test
+  var lp = new Position(this.line);
+  //test end
+  FamousEngine.requestUpdateOnNextTick(this);
+  console.log(this);
 }
 
-Test.prototype.OnUpdate = function(time){
-    this.simulation.update(time);
-    var itemPosition = this.simulation.getTransform(myBox).position;
-    console.log(itemPosition[0] + " "  + itemPosition[1]);
-    mb.set(itemPosition[0],itemPosition[1],itemPosition[2]);
-    FamousEngine.requestUpdateOnNextTick(this);
+Test.prototype.onUpdate = function(time){
+  this.simulation.update(time);
+
+  var itemPosition = this.myBox.getPosition();
+  console.log(this.line.getPosition());
+  //console.log(itemPosition.x, itemPosition.y, itemPosition.z);
+  this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
+  FamousEngine.requestUpdateOnNextTick(this);
 };
 
 //add node - this node will be static
 //create box
-function createBox(node, size, position) {
-    size.setAbsolute(50,50);
-    var mp = new MountPoint(node).set(0.5,0.5);
-    //attach a DOM element component to the staticNode
-    var blueDIV = new DOMElement(node, { 
-      properties:{
-        'background-color':'#49afeb'
-      } 
-    });
-    var mb = new Box({
-        mass: 10,
-        size: [100,100,100],
-        position: new Vec3(window.innerWidth / 2, window.innerHeight / 2, 5)
-    });
-     this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 300});
-    this.simulation.add(mb, this.gravity)
-    console.log("hey");
+function createBox(node, position) {
+  //attach a DOM element component to the staticNode
+  this.blueDIV = new DOMElement(node, { 
+    properties:{
+      'background-color':'#49afeb'
+    } 
+  });
+  var mb = new Box({
+    mass: 10,
+    size: [100, 200, 100],
+    position: new Vec3(window.innerWidth / 2, 0, 0)
+  });
+
+  this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
+
+  this.floor = new Wall({direction: Wall.UP, friction: 0});
+  this.floor.setPosition(0,window.innerHeight, 0);
+
+  this.collision = new Collision([mb, this.floor]);
+  this.distance = new Distance(mb,this.floor);
+
+  this.simulation.add([mb, this.gravity, this.collision]);
+  console.log("hey");
+
+  return mb;
 }
 
 FamousEngine.init();
