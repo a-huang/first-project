@@ -22,7 +22,7 @@ var DOMElement = famous.domRenderables.DOMElement;
 var FamousEngine = famous.core.FamousEngine;
 
 //Physics engine test
-function Test() {
+function Game() {
 
   //create scene graph
   this.scene = FamousEngine.createScene('body');
@@ -37,7 +37,7 @@ function Test() {
       .setSizeMode('absolute', 'absolute', 'absolute')
       .setAbsoluteSize(50, 200)
       .setPosition(0, 0, 0)
-      .setMountPoint(0.5, 0.5);
+      .setMountPoint(0.5, 1);
 
   this.line = this.node.addChild();
   this.line
@@ -53,21 +53,33 @@ function Test() {
 
   var position = new Position(this.node);
   this.myBox = createBox.call(this, this.node, position);
+  this.node.myBox = this.myBox;
   console.log('this.myBox', this.myBox);
   console.log(window.innerHeight);
+
+    this.node.addUIEvent('click');
+    this.node.onReceive = function(event,payload){
+        if(event==='click'){
+            var itemPosition = this.myBox.getPosition();
+            // var bp = this.myBox.getPosition();
+            console.log(itemPosition.y - 100);
+        }
+    }
+
 
   FamousEngine.requestUpdateOnNextTick(this);
   console.log(this);
 }
 
-Test.prototype.onUpdate = function(time){
-  this.simulation.update(time);
+Game.prototype.onUpdate = function(time){
+    this.simulation.update(time);
 
-  var itemPosition = this.myBox.getPosition();
-  // console.log(itemPosition);
-  //console.log(itemPosition.x, itemPosition.y, itemPosition.z);
-  this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
-  FamousEngine.requestUpdateOnNextTick(this);
+    var itemPosition = this.myBox.getPosition();
+  
+    // console.log(itemPosition);
+    //console.log(itemPosition.x, itemPosition.y, itemPosition.z);
+    this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
+    FamousEngine.requestUpdateOnNextTick(this);
 };
 
 //add node - this node will be static
@@ -102,4 +114,4 @@ function createBox(node, position) {
 
 FamousEngine.init();
 
-var test = new Test();
+var test = new Game();
