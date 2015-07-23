@@ -88,6 +88,7 @@ function Game(sceneNode) {
         var game=position.game;
         var uMark = position.uMark;
         var lposition = new Position(game.line);
+        var hasClicked = false;
         game.simulation = new PhysicsEngine();
         console.log(game.simulation);
         game.myBox = createBox.call(game, game.node, position);
@@ -98,7 +99,10 @@ function Game(sceneNode) {
         var element = new DOMElement(sceneNode);
         sceneNode.addUIEvent('click');
         sceneNode.onReceive = function(event, payload) {
-            if (event === 'click') {
+            if (event === 'click' && !hasClicked) {
+               
+              hasClicked = true; // the user has clicked and is only given one opportunity
+               console.log('been clicked? ' + hasClicked);
               //gets the position of the original mark
               var boxPosition = game.myBox.getPosition();
               //console.log('window.innerHeight/3='+window.innerHeight/3)
