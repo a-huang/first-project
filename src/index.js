@@ -55,6 +55,18 @@ function Game(sceneNode) {
       }
     });
 
+    this.rope = this.node.addChild();
+    this.rope
+            .setSizeMode(1, 1, 1)
+            .setAbsoluteSize(3,window.innerHeight)
+            .setPosition(25, 0 - window.innerHeight);
+    var ropeProp = new DOMElement(this.rope, {
+      properties: {
+        'background-color': '#D1D1D1'
+      }
+    });
+
+
 //Character that cuts the box
     this.cutter = sceneNode.addChild();
     this.cutter 
@@ -78,11 +90,13 @@ function Game(sceneNode) {
 
     var position = new Position(this.node);
     position.node = this.node;
+    position.rope = this.rope;
     position.uMark = this.uMark;
     position.game = this;
     position.set(window.innerWidth / 2,0,0, {duration:5000}, dropBox);
     position.reseter = resetButton;
     function dropBox() {
+        position.node.removeChild(position.rope);
         console.log('check');
         var game=position.game;
         var uMark = position.uMark;
@@ -120,9 +134,10 @@ function Game(sceneNode) {
               console.log('clickPositionY='+clickPositionY)
               var diff = cutterPosY-clickPositionY;
               console.log('diff='+diff)
+              var cutPosition = heightOfBox + diff;
               if((-200 < diff) && cutterPosY < clickPositionY){
                     console.log('hi');
-                  uMark.setPosition(0, heightOfBox + diff);
+                  uMark.setPosition(0, cutPosition);
                   var test = new DOMElement(uMark, {
                     properties: {
                         'background-color' : '#009933'
@@ -187,7 +202,7 @@ function createBox(node, position) {
       position: new Vec3(window.innerWidth / 2, 0, 0)
     });
 
-    this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 250});
+    this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
 
     this.floor = new Wall({direction: Wall.UP, friction: 0});
     this.floor.setPosition(0, window.innerHeight, 0);
@@ -200,7 +215,15 @@ function createBox(node, position) {
     return mb;
 }
 
-
+// function split(myBox,position){
+//     console.log(this.myBox);
+//     console.log(position);
+//     // var topHalf = myBox.addChild();
+//     // var tH = new DOMElement(topHalf, {
+//     //   'background-color': '#CC33FF'
+//     // });
+//     // console.log(topHalf);
+// }
 
 // randomAlign() produces a number between 1 and 7
 function randomAlign(){
