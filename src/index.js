@@ -59,8 +59,8 @@ function Game(sceneNode) {
     this.cutter = sceneNode.addChild();
     this.cutter 
         .setSizeMode(1, 1, 1)
-        .setAbsoluteSize(100, 3)
-        .setPosition(window.innerWidth / 2, window.innerHeight/3, -10)
+        .setAbsoluteSize(90, 3)
+        .setPosition(window.innerWidth / 2 - 25, window.innerHeight/3, 0)
         .setMountPoint(1,1);
 
     this.cutProp = new DOMElement(this.cutter, {
@@ -139,10 +139,6 @@ function Game(sceneNode) {
         console.log(position.reseter);
     }
 
-    /*The reset works, but once the box starts to fall and reset is called again,
-      the window goes blank and the box starts at the top, even though
-      its position is set at the bottom of the screen.  
-    */
     var resetButton = sceneNode.addChild();
         resetButton 
               .setSizeMode(1,1,1)
@@ -158,7 +154,6 @@ function Game(sceneNode) {
 
     resetButton.onReceive = function(event, payload){
       if(event === 'click'){
-        console.log(sceneNode);
         console.log(payload);
         restartGame();
         
@@ -206,6 +201,7 @@ function createBox(node, position) {
 }
 
 
+
 // randomAlign() produces a number between 1 and 7
 function randomAlign(){
     var rand = (Math.ceil((Math.random()*7)));
@@ -215,10 +211,20 @@ function randomAlign(){
 
 FamousEngine.init();
 var root = scene.addChild()
-var test = new Game(root);
+var bg = new DOMElement(root,{
+  properties: {
+    'background-color': "#000000"
+  }
+});
+var game = new Game(root);
 
 function restartGame(){
   scene.removeChild(root);
   root = scene.addChild()
-  test = new Game(root);  
+  var bg = new DOMElement(root,{
+    properties: {
+      'background-color': "#000000"
+    }
+  });
+  game = new Game(root);  
 }
