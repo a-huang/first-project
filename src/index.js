@@ -17,7 +17,6 @@ var Collision = physics.Collision;
 var Distance = physics.Distance;
 var Wall = physics.Wall;
 
-
 var DOMElement = famous.domRenderables.DOMElement;
 var FamousEngine = famous.core.FamousEngine;
 
@@ -55,6 +54,7 @@ function Game(sceneNode) {
       }
     });
 
+// Just a rope to 'pull' up the box. Has no real function.
     this.rope = this.node.addChild();
     this.rope
             .setSizeMode(1, 1, 1)
@@ -94,7 +94,6 @@ function Game(sceneNode) {
     position.uMark = this.uMark;
     position.game = this;
     position.set(window.innerWidth / 2,0,0, {duration:5000}, dropBox);
-    position.reseter = resetButton;
     function dropBox() {
         position.node.removeChild(position.rope);
         console.log('check');
@@ -116,27 +115,20 @@ function Game(sceneNode) {
                
               hasClicked = true; // the user has clicked and is only given one opportunity
               //gets the position of the original target line
-              var boxPosition = game.myBox.getPosition();
-              //console.log('window.innerHeight/3='+window.innerHeight/3)
-              //console.log('boxPosition='+boxPosition.y);
-              console.log(boxPosition.y - (((8 - game.line.getAlign()[1] * 8) / 8) * 200)); // gotta find the reciprocal 
-              
-              //change the position of targetLine 
-              //var cH = window.innerHeight / 3; //y position of the cutter
-              //var markPosition = (boxPosition.y - cH) - 20
-              console.log('here '+game.line.getAlign()[1])
+              var boxPosition = game.myBox.getPosition();  
               var heightOfBox = 200;
               var cutterPosY = window.innerHeight/3;
               var redLine = heightOfBox - game.line.getAlign()[1]*heightOfBox;
-              console.log("redLine="+redLine);
               var clickPosition = game.myBox.getPosition();
               var clickPositionY = clickPosition.y;
-              console.log('clickPositionY='+clickPositionY)
               var diff = cutterPosY-clickPositionY;
-              console.log('diff='+diff)
               var cutPosition = heightOfBox + diff;
+
+              console.log('clickPositionY='+clickPositionY)
+              console.log("redLine="+redLine);     
+              console.log('here '+game.line.getAlign()[1])
+              console.log('diff='+diff)
               if((-200 < diff) && cutterPosY < clickPositionY){
-                    console.log('hi');
                   uMark.setPosition(0, cutPosition);
                   var test = new DOMElement(uMark, {
                     properties: {
@@ -144,14 +136,13 @@ function Game(sceneNode) {
                     }
                   });
                }
-              var accuracy = uMark.getPosition()[1] - ((game.line.getAlign()[1] * 200));
+              var accuracy = uMark.getPosition()[1] - ((game.line.getAlign()[1] * 200)); //Distance from target line and cut line
               console.log('accuracy='+ accuracy);
             }
         }.bind(game);
 
         FamousEngine.requestUpdateOnNextTick(game);
         console.log(game);    
-        console.log(position.reseter);
     }
 
     var resetButton = sceneNode.addChild();
@@ -177,25 +168,18 @@ function Game(sceneNode) {
 
 }
 
-
 Game.prototype.onUpdate = function(time){
     this.simulation.update(time);
 
     var itemPosition = this.myBox.getPosition();
-  
-    // console.log(itemPosition);
-    //console.log(itemPosition.x, itemPosition.y, itemPosition.z);
+    // console.log(itemPosition); //Check if box ever stops moving
     this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
     FamousEngine.requestUpdateOnNextTick(this);
 };
 
-
-//add node - this node will be static
 //create box
 function createBox(node, position) {
     //attach a DOM element component to the staticNode
-    
-
     var mb = new Box({
       mass: 10,
       size: [50, 200, 10],
@@ -232,15 +216,7 @@ function randomAlign(){
     return rand;
 }
 
-FamousEngine.init();
-var root = scene.addChild()
-var bg = new DOMElement(root,{
-  properties: {
-    'background-color': "#000000"
-  }
-});
-var game = new Game(root);
-
+// restartGame() removes the previous game and starts a comepletely new one
 function restartGame(){
   scene.removeChild(root);
   root = scene.addChild()
@@ -251,3 +227,12 @@ function restartGame(){
   });
   game = new Game(root);  
 }
+
+FamousEngine.init();
+var root = scene.addChild()
+var bg = new DOMElement(root,{
+  properties: {
+    'background-color': "#000000"
+  }
+});
+var game = new Game(root);
