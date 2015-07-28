@@ -81,8 +81,8 @@ function Game(sceneNode) {
       }
     });
 
-    this.uMark = this.node.addChild();
-    this.uMark
+    this.cutLine= this.node.addChild();
+    this.cutLine
         .setSizeMode(1,1,1)
         .setAbsoluteSize(50, 3)
         .setPosition(0, 150);
@@ -91,14 +91,14 @@ function Game(sceneNode) {
     var position = new Position(this.node);
     position.node = this.node;
     position.rope = this.rope;
-    position.uMark = this.uMark;
+    position.cutLine = this.cutLine;
     position.game = this;
     position.set(window.innerWidth / 2,0,0, {duration:5000}, dropBox);
     function dropBox() {
         position.node.removeChild(position.rope);
         console.log('check');
         var game=position.game;
-        var uMark = position.uMark;
+        var cutLine = position.cutLine;
         var lposition = new Position(game.line);
         var hasClicked = false;
        
@@ -129,15 +129,18 @@ function Game(sceneNode) {
               console.log('here '+game.line.getAlign()[1])
               console.log('diff='+diff)
               if((-200 < diff) && cutterPosY < clickPositionY){
-                  uMark.setPosition(0, cutPosition);
-                  var test = new DOMElement(uMark, {
+                  cutLine.setPosition(0, cutPosition);
+                  var test = new DOMElement(cutLine, {
                     properties: {
                         'background-color' : '#009933'
                     }
                   });
+
+                split.call(game, game.node, game.myBox, cutPosition);
                }
-              var accuracy = uMark.getPosition()[1] - ((game.line.getAlign()[1] * 200)); //Distance from target line and cut line
+              var accuracy = cutLine.getPosition()[1] - ((game.line.getAlign()[1] * 200)); //Distance from target line and cut line
               console.log('accuracy='+ accuracy);
+
             }
         }.bind(game);
 
@@ -172,8 +175,15 @@ Game.prototype.onUpdate = function(time){
     this.simulation.update(time);
 
     var itemPosition = this.myBox.getPosition();
-    // console.log(itemPosition); //Check if box ever stops moving
+    var topPosition;
+    var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
+    if(this.topBox != null){
+        topPosition = this.topBox.getPosition();
+        botPosition = this.botBox.getPosition();
+        this.topHalf.setPosition(topPosition.x, topPosition.y, topPosition.z);
+        this.botHalf.setPosition(botPosition.x, botPosition.y, botPosition.z);
+    }
     FamousEngine.requestUpdateOnNextTick(this);
 };
 
@@ -192,22 +202,72 @@ function createBox(node, position) {
     this.floor.setPosition(0, window.innerHeight, 0);
 
     this.collision = new Collision([mb, this.floor]);
-    this.distance = new Distance(mb,this.floor);
 
     this.simulation.add([mb, this.gravity, this.collision]);
 
     return mb;
 }
 
-// function split(myBox,position){
-//     console.log(this.myBox);
-//     console.log(position);
-//     // var topHalf = myBox.addChild();
-//     // var tH = new DOMElement(topHalf, {
-//     //   'background-color': '#CC33FF'
-//     // });
-//     // console.log(topHalf);
-// }
+function split(node, myBox, position){
+    console.log('split');
+    console.log(this.simulation);
+    console.log(node);
+    console.log('split position: ' + position);
+    var bp = myBox.position;
+    console.log(bp);
+    var bhp = 200 - position; // position of bottom half
+
+    this.topHalf = node.addChild();
+    this.topHalf
+              .setSizeMode(1, 1, 1)
+              .setAbsoluteSize(50, position)
+              .setPosition(0,0,0);
+
+    var th = new DOMElement(this.topHalf, {
+      properties:{
+        'background-color': '#FF6600'
+      }
+    });
+
+    this.botHalf = node.addChild();
+    this.botHalf
+              .setSizeMode(1, 1, 1)
+              .setAbsoluteSize(50, bhp)
+              .setPosition(0, position, 0);
+    var bh = new DOMElement(this.botHalf, {
+      properties:{
+        'background-color': '#666666'      
+      }
+    });
+
+    this.topBox = new Box({
+      mass: 10,
+      size: [50,position, 10],
+      position: new Vec3(0, 0, 0)
+    });
+
+    this.botBox = new Box({
+      mass: 10,
+      size: [50, bhp],
+      position: new Vec3 (0,position + 1, 0)
+    });
+
+
+    var topbot =  new Collision([this.topBox, this.botBox]);
+    this.gravity.addTarget(this.topBox);
+    this.gravity.addTarget(this.botBox);
+    // this.collision.removeTarget(this.collision.targets[0]); //test removing original myBox
+    //test to see if adding new constaraint,'nfloor', will resolve the issue of the box falling through
+    var nfloor = new Wall({direction: Wall.UP, friction: 0});
+    nfloor.setPosition(0, window.innerHeight, 0);
+
+    this.collision.addTarget(this.topBox);
+    this.collision.addTarget(this.botBox);
+    this.collision.addTarget(nfloor);
+    console.log('here:' );
+    console.log(this.collision);
+    this.simulation.add([this.topBox, this.botBox,nfloor]);
+}
 
 // randomAlign() produces a number between 1 and 7
 function randomAlign(){
