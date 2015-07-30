@@ -27,6 +27,7 @@ camera.setDepth(1000);
 
 function Game(sceneNode) {
     //Create node to represent box w/ marked line
+    this.scene = sceneNode;
     this.node = sceneNode.addChild();
     this.node
         .setSizeMode('absolute', 'absolute', 'absolute')
@@ -173,16 +174,22 @@ function Game(sceneNode) {
 
 Game.prototype.onUpdate = function(time){
     this.simulation.update(time);
-
     var itemPosition = this.myBox.getPosition();
     var topPosition;
     var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
+    console.log('node position: ');
+     console.log(this.node.getPosition());
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
-        botPosition = this.botBox.getPosition();
-        this.topHalf.setPosition(topPosition.x, topPosition.y, topPosition.z);
-        this.botHalf.setPosition(botPosition.x, botPosition.y, botPosition.z);
+        botPosition = this.botBox.getPosition(); 
+        // console.log('node x: ' + itemPosition.x + 'node y: ' + itemPosition.y);
+        this.topHalf.setPosition(topPosition.x, topPosition.y, 0);
+        this.botHalf.setPosition(botPosition.x, botPosition.y, 0);
+        // console.log(this.node.getPosition());
+        console.log('top and bottom');
+        console.log(this.topHalf.getPosition());
+        console.log(this.botHalf.getPosition());
     }
     FamousEngine.requestUpdateOnNextTick(this);
 };
@@ -198,7 +205,7 @@ function createBox(node, position) {
 
     this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
 
-    this.floor = new Wall({direction: Wall.UP, friction: 0});
+    this.floor = new Wall({direction: Wall.UP, friction: 1});
     this.floor.setPosition(0, window.innerHeight, 0);
 
     this.collision = new Collision([mb, this.floor]);
@@ -210,18 +217,20 @@ function createBox(node, position) {
 
 function split(node, myBox, position){
     console.log('split');
+    console.log(this.scene);
     console.log(this.simulation);
     console.log(node);
     console.log('split position: ' + position);
     var bp = myBox.position;
     console.log(bp);
     var bhp = 200 - position; // position of bottom half
-
-    this.topHalf = node.addChild();
+    var boxPosition = this.myBox.getPosition();
+    this.topHalf = this.scene.addChild();
     this.topHalf
               .setSizeMode(1, 1, 1)
               .setAbsoluteSize(50, position)
-              .setPosition(0,0,0);
+              .setMountPoint(0.5, 1)
+              // .setPosition(window.innerWidth / 2, boxPosition.y - 200, 0);
 
     var th = new DOMElement(this.topHalf, {
       properties:{
@@ -229,11 +238,12 @@ function split(node, myBox, position){
       }
     });
 
-    this.botHalf = node.addChild();
+    this.botHalf = this.scene.addChild();
     this.botHalf
               .setSizeMode(1, 1, 1)
               .setAbsoluteSize(50, bhp)
-              .setPosition(0, position, 0);
+              .setMountPoint(0.5, 1)
+              // .setPosition(window.innerWidth / 2, boxPosition.y - position, 0);
     var bh = new DOMElement(this.botHalf, {
       properties:{
         'background-color': '#666666'      
@@ -243,30 +253,28 @@ function split(node, myBox, position){
     this.topBox = new Box({
       mass: 10,
       size: [50,position, 10],
-      position: new Vec3(0, 0, 0)
+      position: new Vec3(window.innerWidth / 2, boxPosition.y - 100, 0)
     });
 
     this.botBox = new Box({
       mass: 10,
-      size: [50, bhp],
-      position: new Vec3 (0,position + 1, 0)
+      size: [50, bhp, 10],
+      position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 101, 0)
     });
 
+    this.gravity.removeTarget(this.myBox);
+    this.collision.removeTarget(this.myBox);
+    this.scene.removeChild(this.node);
 
-    var topbot =  new Collision([this.topBox, this.botBox]);
     this.gravity.addTarget(this.topBox);
     this.gravity.addTarget(this.botBox);
-    // this.collision.removeTarget(this.collision.targets[0]); //test removing original myBox
-    //test to see if adding new constaraint,'nfloor', will resolve the issue of the box falling through
-    var nfloor = new Wall({direction: Wall.UP, friction: 0});
-    nfloor.setPosition(0, window.innerHeight, 0);
 
     this.collision.addTarget(this.topBox);
     this.collision.addTarget(this.botBox);
-    this.collision.addTarget(nfloor);
-    console.log('here:' );
-    console.log(this.collision);
-    this.simulation.add([this.topBox, this.botBox,nfloor]);
+    this.simulation.add([this.topBox, this.botBox]);
+
+    console.log(this.topBox.collisionGroup);
+    console.log(this.botBox);
 }
 
 // randomAlign() produces a number between 1 and 7
