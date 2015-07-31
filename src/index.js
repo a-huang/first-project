@@ -42,7 +42,6 @@ function Game(sceneNode) {
     });
     var gameNode=this.node;
 
-
     this.line = this.node.addChild();
 
     this.line
@@ -97,23 +96,19 @@ function Game(sceneNode) {
     position.set(window.innerWidth / 2,0,0, {duration:5000}, dropBox);
     function dropBox() {
         position.node.removeChild(position.rope);
-        console.log('check');
         var game=position.game;
         var cutLine = position.cutLine;
         var lposition = new Position(game.line);
         var hasClicked = false;
        
         game.simulation = new PhysicsEngine();
-        console.log(game.simulation);
         game.myBox = createBox.call(game, game.node, position);
-        console.log('game.myBox', game.myBox);
 
         //This event needs to return the location of the box
         var element = new DOMElement(sceneNode);
         sceneNode.addUIEvent('click');
         sceneNode.onReceive = function(event, payload) {
             if (event === 'click' && !hasClicked) {
-              console.log(this.myBox);
               hasClicked = true; // the user has clicked and is only given one opportunity
               //gets the position of the original target line
               var boxPosition = game.myBox.getPosition();  
@@ -124,7 +119,8 @@ function Game(sceneNode) {
               var clickPositionY = clickPosition.y;
               var diff = cutterPosY-clickPositionY;
               var cutPosition = heightOfBox + diff;
-
+              var accuracy = cutPosition - ((game.line.getAlign()[1] * 200)); //Distance from target line and cut line
+              console.log('accuracy='+ accuracy);
               console.log('clickPositionY='+clickPositionY)
               console.log("redLine="+redLine);     
               console.log('here '+game.line.getAlign()[1])
@@ -137,10 +133,8 @@ function Game(sceneNode) {
                     }
                   });
 
-                split.call(game, game.node, game.myBox, cutPosition);
+                split.call(game, game.node, game.myBox, cutPosition, accuracy);
                }
-              var accuracy = cutLine.getPosition()[1] - ((game.line.getAlign()[1] * 200)); //Distance from target line and cut line
-              console.log('accuracy='+ accuracy);
 
             }
         }.bind(game);
@@ -164,9 +158,7 @@ function Game(sceneNode) {
 
     resetButton.onReceive = function(event, payload){
       if(event === 'click'){
-        console.log(payload);
-        restartGame();
-        
+        restartGame();       
       }
     }
 
@@ -178,17 +170,11 @@ Game.prototype.onUpdate = function(time){
     var topPosition;
     var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y, 0);
-    console.log(this.node.getPosition());
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
         botPosition = this.botBox.getPosition(); 
-        // console.log('node x: ' + itemPosition.x + 'node y: ' + itemPosition.y);
         this.topHalf.setPosition(topPosition.x, topPosition.y, 0);
         this.botHalf.setPosition(botPosition.x, botPosition.y, 0);
-        // console.log(this.node.getPosition());
-        // console.log('top and bottom');
-        // console.log(this.topHalf.getPosition());
-        // console.log(this.botHalf.getPosition());
     }
     FamousEngine.requestUpdateOnNextTick(this);
 };
@@ -220,7 +206,21 @@ function createBox() {
     return mb;
 }
 
-function split(node, myBox, position){
+function createLine(node, position) {
+  this.line = node.addChild();
+
+  this.line
+      .setAbsoluteSize(50, 5)
+      .setSizeMode(1, 1, 1)
+      .setPosition(0, position)
+  var targetLine = new DOMElement(this.line, {
+    properties: {
+      'background-color': '#FF0000'
+    }
+  });
+}
+
+function split(node, myBox, position, accuracy){
     console.log('split');
     console.log(this.scene);
     console.log(this.simulation);
@@ -269,6 +269,17 @@ function split(node, myBox, position){
       position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 61, 0)
     });
 
+    if(accuracy > 0){
+      var pos1 = position - accuracy;
+      createLine.call(this, this.topHalf, pos1);
+    }
+    else{
+      var pos = 0 - accuracy;
+      createLine.call(this, this.botHalf, pos);
+      console.log(accuracy);
+      console.log(pos);
+    }
+
     this.gravity.removeTarget(this.myBox);
     this.collision.removeTarget(this.myBox);
     this.scene.removeChild(this.node);
@@ -279,9 +290,6 @@ function split(node, myBox, position){
     this.collision.addTarget(this.topBox);
     this.collision.addTarget(this.botBox);
     this.simulation.add([this.topBox, this.botBox]);
-
-    console.log(this.topBox.collisionGroup);
-    console.log(this.botBox);
 }
 
 // randomAlign() produces a number between 1 and 7
