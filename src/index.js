@@ -178,8 +178,6 @@ Game.prototype.onUpdate = function(time){
     var topPosition;
     var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
-    console.log('node position: ');
-     console.log(this.node.getPosition());
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
         botPosition = this.botBox.getPosition(); 
@@ -187,15 +185,15 @@ Game.prototype.onUpdate = function(time){
         this.topHalf.setPosition(topPosition.x, topPosition.y, 0);
         this.botHalf.setPosition(botPosition.x, botPosition.y, 0);
         // console.log(this.node.getPosition());
-        console.log('top and bottom');
-        console.log(this.topHalf.getPosition());
-        console.log(this.botHalf.getPosition());
+        // console.log('top and bottom');
+        // console.log(this.topHalf.getPosition());
+        // console.log(this.botHalf.getPosition());
     }
     FamousEngine.requestUpdateOnNextTick(this);
 };
 
 //create box
-function createBox(node, position) {
+function createBox() {
     //attach a DOM element component to the staticNode
     var mb = new Box({
       mass: 10,
@@ -205,10 +203,16 @@ function createBox(node, position) {
 
     this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
 
-    this.floor = new Wall({direction: Wall.UP, friction: 1});
+    //Create constraints 
+    this.floor = new Wall({direction: Wall.UP, friction: 0});
     this.floor.setPosition(0, window.innerHeight, 0);
 
-    this.collision = new Collision([mb, this.floor]);
+    this.rightWall = new Wall({direction: Wall.RIGHT, friction: 0});
+    this.rightWall.setPosition(0,0,0);
+    this.leftWall = new Wall({direction: Wall.LEFT, friction: 0});
+    this.leftWall.setPosition(window.innerWidth, 0, 0);
+
+    this.collision = new Collision([mb, this.floor, this.leftWall, this.rightWall]);
 
     this.simulation.add([mb, this.gravity, this.collision]);
 
