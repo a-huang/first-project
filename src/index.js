@@ -113,7 +113,7 @@ function Game(sceneNode) {
         sceneNode.addUIEvent('click');
         sceneNode.onReceive = function(event, payload) {
             if (event === 'click' && !hasClicked) {
-               
+              console.log(this.myBox);
               hasClicked = true; // the user has clicked and is only given one opportunity
               //gets the position of the original target line
               var boxPosition = game.myBox.getPosition();  
@@ -177,7 +177,8 @@ Game.prototype.onUpdate = function(time){
     var itemPosition = this.myBox.getPosition();
     var topPosition;
     var botPosition;
-    this.node.setPosition(itemPosition.x,itemPosition.y,itemPosition.z);
+    this.node.setPosition(itemPosition.x,itemPosition.y, 0);
+    console.log(this.node.getPosition());
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
         botPosition = this.botBox.getPosition(); 
@@ -204,7 +205,7 @@ function createBox() {
     this.gravity = new Gravity1D(mb, {direction: Gravity1D.DOWN, strength: 500});
 
     //Create constraints 
-    this.floor = new Wall({direction: Wall.UP, friction: 0});
+    this.floor = new Wall({direction: Wall.UP, friction: 50});
     this.floor.setPosition(0, window.innerHeight, 0);
 
     this.rightWall = new Wall({direction: Wall.RIGHT, friction: 0});
@@ -257,13 +258,15 @@ function split(node, myBox, position){
     this.topBox = new Box({
       mass: 10,
       size: [50,position, 10],
-      position: new Vec3(window.innerWidth / 2, boxPosition.y - 100, 0)
+      velocity: this.myBox.velocity,
+      position: new Vec3(window.innerWidth / 2, boxPosition.y - 140, 0)
     });
 
     this.botBox = new Box({
       mass: 10,
       size: [50, bhp, 10],
-      position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 101, 0)
+      velocity: this.myBox.velocity,
+      position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 61, 0)
     });
 
     this.gravity.removeTarget(this.myBox);
