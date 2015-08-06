@@ -25,6 +25,7 @@ var scene = FamousEngine.createScene('body');
 var camera = new Camera(scene);
 camera.setDepth(1000);
 
+
 function Game(sceneNode) {
     //Create node to represent box w/ marked line
     this.scene = sceneNode;
@@ -35,17 +36,20 @@ function Game(sceneNode) {
         .setPosition(window.innerWidth / 2, window.innerHeight, 0)
         .setMountPoint(0.5, 1);
 
+
     this.blueBox = new DOMElement(this.node, { 
         properties:{
-          'background-color':'#49afeb'
-        } 
-    });
+          'background-image':'url(images/log.png',
+                  'border-radius': '10px',
+
+        }});
+    // }).setAttribute('src', './images/log.png');
     var gameNode=this.node;
 
     this.line = this.node.addChild();
 
     this.line
-        .setAbsoluteSize(50, 5)
+        .setAbsoluteSize(50, 6)
         .setSizeMode(1, 1, 1)
         .setAlign(0.0, (randomAlign.call()/8)); //need to make function to radomize this
     var targetLine = new DOMElement(this.line, {
@@ -134,7 +138,7 @@ function Game(sceneNode) {
                   });
 
                 split.call(game, game.node, game.myBox, cutPosition, accuracy);
-               }
+              }
 
             }
         }.bind(game);
@@ -239,7 +243,10 @@ function split(node, myBox, position, accuracy){
 
     var th = new DOMElement(this.topHalf, {
       properties:{
-        'background-color': '#FF6600'
+        'background-color': '#FF6600',
+        'background-image':'url(images/log.png',
+        'border-top-right-radius': '5px',
+        'border-top-left-radius': '5px'
       }
     });
 
@@ -251,7 +258,11 @@ function split(node, myBox, position, accuracy){
               // .setPosition(window.innerWidth / 2, boxPosition.y - position, 0);
     var bh = new DOMElement(this.botHalf, {
       properties:{
-        'background-color': '#666666'      
+        'background-color': '#666666',
+        'background-image':'url(images/log.png',
+        'background-position-y':'bottom',
+        'border-bottom-right-radius': '5px',
+        'border-bottom-left-radius': '5px'
       }
     });
 
@@ -309,6 +320,13 @@ function restartGame(){
     }
   });
   game = new Game(root);  
+}
+
+function updatePoints(accuracy){
+   var opposite = 0 - accuracy //if topHalf accuracy > 0, but they should lose points for going over
+   if(-3 <= accuracy <= 3){
+      
+   }
 }
 
 FamousEngine.init();
