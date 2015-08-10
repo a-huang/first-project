@@ -110,9 +110,9 @@ function Game(sceneNode) {
 
         //This event needs to return the location of the box
         var element = new DOMElement(sceneNode);
-        sceneNode.addUIEvent('click');
+        sceneNode.addUIEvent('mousedown');
         sceneNode.onReceive = function(event, payload) {
-            if (event === 'click' && !hasClicked) {
+            if (event === 'mousedown' && !hasClicked) {
               hasClicked = true; // the user has clicked and is only given one opportunity
               //gets the position of the original target line
               var boxPosition = game.myBox.getPosition();  
@@ -225,11 +225,6 @@ function createLine(node, position) {
 }
 
 function split(node, myBox, position, accuracy){
-    console.log('split');
-    console.log(this.scene);
-    console.log(this.simulation);
-    console.log(node);
-    console.log('split position: ' + position);
     var bp = myBox.position;
     console.log(bp);
     var bhp = 200 - position; // position of bottom half
@@ -287,8 +282,6 @@ function split(node, myBox, position, accuracy){
     else{
       var pos = 0 - accuracy;
       createLine.call(this, this.botHalf, pos);
-      console.log(accuracy);
-      console.log(pos);
     }
 
     this.gravity.removeTarget(this.myBox);
@@ -325,11 +318,12 @@ function restartGame(){
 function updatePoints(accuracy){
    var opposite = 0 - accuracy //if topHalf accuracy > 0, but they should lose points for going over
    if(-3 <= accuracy <= 3){
-      
+
    }
 }
 
 FamousEngine.init();
+var points = 0;
 var root = scene.addChild()
 var bg = new DOMElement(root,{
   properties: {
