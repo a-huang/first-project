@@ -28,6 +28,7 @@ camera.setDepth(1000);
 
 function Game(sceneNode) {
     //Create node to represent box w/ marked line
+    hasClicked = false;
     this.scene = sceneNode;
     this.node = sceneNode.addChild();
     this.node
@@ -103,7 +104,6 @@ function Game(sceneNode) {
         var game=position.game;
         var cutLine = position.cutLine;
         var lposition = new Position(game.line);
-        var hasClicked = false;
        
         game.simulation = new PhysicsEngine();
         game.myBox = createBox.call(game, game.node, position);
@@ -161,7 +161,7 @@ function Game(sceneNode) {
     });
 
     resetButton.onReceive = function(event, payload){
-      if(event === 'click'){
+      if(event === 'click' && hasClicked){
         restartGame();       
       }
     }
@@ -174,6 +174,7 @@ Game.prototype.onUpdate = function(time){
     var topPosition;
     var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y, 0);
+    console.log(hasClicked);
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
         botPosition = this.botBox.getPosition(); 
@@ -324,6 +325,7 @@ function updatePoints(accuracy){
 
 FamousEngine.init();
 var points = 0;
+var hasClicked = false;
 var root = scene.addChild()
 var bg = new DOMElement(root,{
   properties: {
