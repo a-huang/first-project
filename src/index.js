@@ -28,6 +28,16 @@ camera.setDepth(1000);
 
 function Game(sceneNode) {
     //Create node to represent box w/ marked line
+    if(replays >= 5){
+      alert("Game Over")
+      var again = confirm("Play Again?");
+      if(again){
+        points = 0;
+        replays = 0;
+      }
+      //Needs condition if player says no to playing again.
+    }
+
     hasClicked = false;
     this.scene = sceneNode;
     this.node = sceneNode.addChild();
@@ -37,14 +47,12 @@ function Game(sceneNode) {
         .setPosition(window.innerWidth / 2, window.innerHeight, 0)
         .setMountPoint(0.5, 1);
 
-
     this.blueBox = new DOMElement(this.node, { 
         properties:{
-          'background-image':'url(images/log.png',
+          'background-image':'url(images/log.png)',
                   'border-radius': '10px',
 
         }});
-    // }).setAttribute('src', './images/log.png');
     var gameNode=this.node;
 
     this.line = this.node.addChild();
@@ -58,6 +66,31 @@ function Game(sceneNode) {
         'background-color': '#FF0000'
       }
     });
+    this.score = sceneNode.addChild();
+    this.score.setPosition(10,10)
+            .setSizeMode(1,1,1)
+            .setAbsoluteSize(110,110);    
+    this.el = new DOMElement(this.score,{
+      properties: {
+        'color':'red',
+        'fontFamily': 'Lucida Console',
+        'fontSize': '30pt',
+      },
+      content: ''
+    });
+
+    //el.setContent('TEST');
+
+    /*
+    var pd = new DOMElement(this.score, {
+      properties: {
+        //content: points,
+        content: 'points',
+        font:    'Helvetica',
+        fontSize: '30pt',
+        color: "red", 
+        }
+    });*/
 
 // Just a rope to 'pull' up the box. Has no real function.
     this.rope = this.node.addChild();
@@ -162,6 +195,8 @@ function Game(sceneNode) {
 
     resetButton.onReceive = function(event, payload){
       if(event === 'click' && hasClicked){
+        replays ++;
+        console.log('points: ' + points);
         restartGame();       
       }
     }
@@ -170,11 +205,11 @@ function Game(sceneNode) {
 
 Game.prototype.onUpdate = function(time){
     this.simulation.update(time);
+    this.el.setContent(points);
     var itemPosition = this.myBox.getPosition();
     var topPosition;
     var botPosition;
     this.node.setPosition(itemPosition.x,itemPosition.y, 0);
-    console.log(hasClicked);
     if(this.topBox != null){
         topPosition = this.topBox.getPosition();
         botPosition = this.botBox.getPosition(); 
@@ -240,7 +275,7 @@ function split(node, myBox, position, accuracy){
     var th = new DOMElement(this.topHalf, {
       properties:{
         'background-color': '#FF6600',
-        'background-image':'url(images/log.png',
+        'background-image':'url(images/log.png)',
         'border-top-right-radius': '5px',
         'border-top-left-radius': '5px'
       }
@@ -255,7 +290,7 @@ function split(node, myBox, position, accuracy){
     var bh = new DOMElement(this.botHalf, {
       properties:{
         'background-color': '#666666',
-        'background-image':'url(images/log.png',
+        'background-image':'url(images/log.png)',
         'background-position-y':'bottom',
         'border-bottom-right-radius': '5px',
         'border-bottom-left-radius': '5px'
@@ -266,14 +301,14 @@ function split(node, myBox, position, accuracy){
       mass: 10,
       size: [50,position, 10],
       velocity: this.myBox.velocity,
-      position: new Vec3(window.innerWidth / 2, boxPosition.y - 140, 0)
+      position: new Vec3(window.innerWidth / 2, boxPosition.y - 160, 0)
     });
 
     this.botBox = new Box({
       mass: 10,
       size: [50, bhp, 10],
       velocity: this.myBox.velocity,
-      position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 61, 0)
+      position: new Vec3 (window.innerWidth / 2, boxPosition.y - position + 41, 0)
     });
 
     if(accuracy > 0){
@@ -284,7 +319,7 @@ function split(node, myBox, position, accuracy){
       var pos = 0 - accuracy;
       createLine.call(this, this.botHalf, pos);
     }
-
+    updatePoints(accuracy);
     this.gravity.removeTarget(this.myBox);
     this.collision.removeTarget(this.myBox);
     this.scene.removeChild(this.node);
@@ -310,26 +345,95 @@ function restartGame(){
   root = scene.addChild()
   var bg = new DOMElement(root,{
     properties: {
-      'background-color': "#000000"
+      'background-color': "#00CCFF"
     }
   });
   game = new Game(root);  
 }
 
 function updatePoints(accuracy){
-   var opposite = 0 - accuracy //if topHalf accuracy > 0, but they should lose points for going over
-   if(-3 <= accuracy <= 3){
+  accuracy = Math.round(accuracy);
+  console.log('accuracy: ' + accuracy);
+  if((-3 <= accuracy) && (accuracy <= 3)){
+    points += 250;
+  }
+  else if(accuracy < (-50)){ // what if the user doesnt click at all, hasclicked cannot be used since clicking on the screen counts.
+    points -= 200;
+  }
+  else if(accuracy < -3){ // if the player waited too long to click
+    points += accuracy;
+  }
+  else{
+    if((40 < accuracy) && (accuracy <= 50)){
+      points += 20;
+    }
+    else if((30 < accuracy) && (accuracy <= 40)){
+      points += 40;
+    }
+    else if((20 < accuracy) && (accuracy <= 30)){
+      points += 60;
+    }
+    else if((10 < accuracy) && (accuracy <= 20)){
+      points += 80;
+    }
+    else if((3 < accuracy) && (accuracy < 10)){
+      points += 100;
+    }
+    else{
+      points -= 100;
+    }
+  }
+}
 
-   }
+function startScreen(){
+  var start = root.addChild();
+  var startEl = new DOMElement(start, {
+    properties: {
+      'background-color': '#000000'
+    }
+  });
+  var startButton = start.addChild();
+      startButton.setSizeMode(1,1,1)
+                  .setAbsoluteSize(200,100)
+                  .setAlign(0.5, 0.75)
+                  .setMountPoint(0.5,0.5)
+                  .addUIEvent('click');
+  var sbEl = new DOMElement(startButton, {
+      properties: {
+        'background-color': '#FFFFFF',
+        'fontSize': '30pt',
+        'textAlign': 'center'
+      },
+      content: 'Start'
+  });
+
+
+
+  startButton.onReceive = function(event,payload){
+    if(event==='click'){
+        game = new Game(root);
+        root.removeChild(start);
+    }
+  }
 }
 
 FamousEngine.init();
 var points = 0;
 var hasClicked = false;
+var replays = 0; //number of times the game has restarted
 var root = scene.addChild()
+/*
+var pDisplay = root.addChild()
+    pDisplay.setPosition(0,100)
+            .setSizeMode(1,1,1)
+            .setAbsoluteSize(110,110);
+*/
 var bg = new DOMElement(root,{
   properties: {
-    'background-color': "#000000"
+    'background-color': "#00CCFF"
   }
 });
-var game = new Game(root);
+
+var game;
+
+startScreen();
