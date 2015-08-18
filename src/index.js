@@ -28,15 +28,15 @@ camera.setDepth(1000);
 
 function Game(sceneNode) {
     //Create node to represent box w/ marked line
-    if(replays >= 5){
-      alert("Game Over")
-      var again = confirm("Play Again?");
-      if(again){
-        points = 0;
-        replays = 0;
-      }
-      //Needs condition if player says no to playing again.
-    }
+    // if(replays >= 5){
+    //   alert("Game Over")
+    //   var again = confirm("Play Again?");
+    //   if(again){
+    //     points = 0;
+    //     replays = 0;
+    //   }
+    //   //Needs condition if player says no to playing again.
+    // }
 
     hasClicked = false;
     this.scene = sceneNode;
@@ -64,7 +64,8 @@ function Game(sceneNode) {
     var targetLine = new DOMElement(this.line, {
       properties: {
         'background-color': '#FF0000'
-      }
+      },
+      content: ' '
     });
     this.score = sceneNode.addChild();
     this.score.setPosition(10,10)
@@ -190,7 +191,8 @@ function Game(sceneNode) {
     var resetProp = new DOMElement(resetButton, {
         properties:{
           'background-color': '#660066'
-        }
+        },
+        content: 'Reset'
     });
 
     resetButton.onReceive = function(event, payload){
@@ -411,8 +413,9 @@ function startScreen(){
 
   startButton.onReceive = function(event,payload){
     if(event==='click'){
-        game = new Game(root);
+
         root.removeChild(start);
+        restartGame();
     }
   }
 }
